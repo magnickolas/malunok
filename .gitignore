@@ -1,0 +1,6 @@
+tags
+.cache/
+/build/
+/build.sh
+.gdb_history
+.nvimrc.lua
