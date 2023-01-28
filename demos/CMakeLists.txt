@@ -1,4 +1,4 @@
-set(DEMOS sin)
+set(DEMOS sin sin_wall)
 
 find_package(SDL2 REQUIRED)
 find_package(X11 REQUIRED)

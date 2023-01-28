@@ -34,14 +34,24 @@ template <typename T> T clip(T value, T min, T max) {
 
 SDLWinContext::SDLWinContext(SDLWinContext&&) = default;
 
-SDLWinContext::SDLWinContext(SDLWinContext::opts&& o)
+SDLWinContext::SDLWinContext(SDLWinContext::opts o)
     : window_(nullptr, SDL_DestroyWindow),
       renderer_(nullptr, SDL_DestroyRenderer) {
   sdl_must(SDL_Init(SDL_INIT_VIDEO));
   window_.reset(
-      sdl_must(SDL_CreateWindow(o.title, o.x, o.y, o.w, o.h, o.flags)));
+      sdl_must(SDL_CreateWindow(o.window.title, o.window.x, o.window.y,
+                                o.window.w, o.window.h, o.window.flags)));
   renderer_.reset(sdl_must(
-      SDL_CreateRenderer(window_.get(), o.renderer_index, o.renderer_flags)));
+      SDL_CreateRenderer(window_.get(), o.renderer.index, o.renderer.flags)));
+}
+
+SDLWinContext::SDLWinContext(const X11Background& x11, const renderer_opts& ro)
+    : window_(nullptr, SDL_DestroyWindow),
+      renderer_(nullptr, SDL_DestroyRenderer) {
+  sdl_must(SDL_Init(SDL_INIT_VIDEO));
+  window_.reset(sdl_must(SDL_CreateWindowFrom((const void*)x11.winProps.root)));
+  renderer_.reset(
+      sdl_must(SDL_CreateRenderer(window_.get(), ro.index, ro.flags)));
 }
 
 SDL_Renderer& SDLWinContext::get_renderer() {
@@ -51,11 +61,6 @@ SDL_Renderer& SDLWinContext::get_renderer() {
 SDLContext::SDLContext(uint32_t flags) { sdl_must(SDL_Init(flags)); }
 
 SDLContext::~SDLContext() { SDL_Quit(); }
-
-SDLWinContext& SDLContext::new_window(SDLWinContext::opts&& o) {
-  windows.emplace_back(std::move(o));
-  return windows.back();
-}
 
 std::optional<SDL_Event> SDLContext::poll() {
   if (!SDL_PollEvent(&event_)) {

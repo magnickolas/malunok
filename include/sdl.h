@@ -1,5 +1,6 @@
 #pragma once
 
+#include "x11.h"
 #include <SDL.h>
 #include <SDL_events.h>
 #include <SDL_render.h>
@@ -13,21 +14,28 @@
 class SDLContext;
 
 class SDLWinContext {
-private:
-  struct opts {
+public:
+  struct win_opts {
     const char* title;
     int x;
     int y;
     int w;
     int h;
     uint32_t flags;
-    int renderer_index;
-    uint32_t renderer_flags;
+  };
+  struct renderer_opts {
+    int index;
+    uint32_t flags;
+  };
+  struct opts {
+    win_opts window;
+    renderer_opts renderer;
   };
 
 public:
   SDLWinContext(SDLWinContext&&);
-  SDLWinContext(opts&& o);
+  SDLWinContext(opts o);
+  SDLWinContext(const X11Background& x11, const renderer_opts& renderer_opts);
   SDLWinContext(const SDLWinContext&) = delete;
   SDLWinContext& operator=(const SDLWinContext&) = delete;
   ~SDLWinContext() = default;
@@ -49,7 +57,10 @@ public:
   SDLContext& operator=(const SDLContext&) = delete;
   ~SDLContext();
 
-  SDLWinContext& new_window(SDLWinContext::opts&&);
+  template <typename... Args> SDLWinContext& new_window(Args&&... args) {
+    windows.emplace_back(std::forward<Args>(args)...);
+    return windows.back();
+  }
   std::optional<SDL_Event> poll();
 
 private:

@@ -3,6 +3,7 @@
 #include "motion_params/move.h"
 #include "sdl.h"
 #include "sdl_utils.h"
+#include "x11.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_render.h>
@@ -15,20 +16,16 @@ using namespace std::chrono_literals;
 #define COLOR(c) (c).r, (c).g, (c).b, (c).a
 
 int main() {
-  int width = 1280;
-  int height = 720;
+  int width = 1920;
+  int height = 1080;
 
   SDLContext sdl_ctx{SDL_INIT_VIDEO};
-  auto& window_ctx = sdl_ctx.new_window({
-      .title = "malunok: sin demo",
-      .x = SDL_WINDOWPOS_CENTERED,
-      .y = SDL_WINDOWPOS_CENTERED,
-      .w = width,
-      .h = height,
-      .flags = SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS,
-      .renderer_index = -1,
-      .renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC,
-  });
+  X11Background background;
+  auto& window_ctx = sdl_ctx.new_window(
+      background,
+      SDLWinContext::renderer_opts{.index = -1,
+                                   .flags = SDL_RENDERER_ACCELERATED |
+                                            SDL_RENDERER_PRESENTVSYNC});
   auto& window = window_ctx.get_window();
   auto& renderer = window_ctx.get_renderer();
 
@@ -60,6 +57,7 @@ int main() {
       },
       color_slider);
 
+  auto pixels = std::make_unique<uint8_t[]>(width * height * 4);
   while (true) {
     while (auto e = sdl_ctx.poll()) {
       if (e->type == SDL_QUIT ||
@@ -91,8 +89,12 @@ int main() {
       auto [dx, dy] = map_coords.to_screen_f(x, y);
       SDL_DrawDisk(&renderer, dx, dy, 5);
     }
-    SDL_RenderPresent(&renderer);
+    /* SDL_RenderPresent(&renderer); */
+    SDL_RenderReadPixels(&renderer, NULL, SDL_PIXELFORMAT_BGRA32, pixels.get(),
+                         width * sizeof(uint32_t));
+    background.setPixmap(pixels);
   }
+  // TODO: investigate bar crash after exit
 SDL_EXIT:
   return 0;
 }
