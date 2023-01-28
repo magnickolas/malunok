@@ -17,7 +17,7 @@ function(buildDemo DEMO_NAME)
     cxx_std_20)
   target_compile_options(
     ${DEMO_NAME} PRIVATE
-    -Wall -Wextra -pedantic-errors -O0 -g)
+    -Wall -Wextra -pedantic-errors)
 endfunction(buildDemo)
 
 function(buildDemos)
@@ -25,6 +25,5 @@ function(buildDemos)
     buildDemo(${DEMO})
   endforeach(DEMO)
 endfunction(buildDemos)
-
 
 buildDemos()
