@@ -3,22 +3,12 @@
 #include "motion_params/move.h"
 #include "sdl.h"
 #include "sdl_utils.h"
-#include "x11.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
-#include <X11/Xlib.h>
 #include <chrono>
-#include <fstream>
-#include <functional>
-#include <iomanip>
-#include <iostream>
-#include <memory>
-#include <optional>
-#include <sstream>
-#include <stdexcept>
-#include <thread>
+#include <utility>
 
 using namespace std::chrono_literals;
 
