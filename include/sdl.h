@@ -67,3 +67,13 @@ private:
   std::vector<SDLWinContext> windows;
   SDL_Event event_;
 };
+
+class FPSCapGuard {
+public:
+  FPSCapGuard(uint32_t fps);
+  ~FPSCapGuard();
+
+private:
+  uint32_t fps_;
+  uint64_t start_;
+};

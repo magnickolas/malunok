@@ -81,8 +81,7 @@ int main() {
       std::make_unique<uint8_t[]>(static_cast<size_t>(width * height * 4));
   while (true) {
     SharedTimer::tick();
-
-    auto start = SDL_GetPerformanceCounter();
+    FPSCapGuard g{60};
 
     while (auto e = sdl_ctx.poll()) {
       if (e->type == SDL_QUIT ||
@@ -118,13 +117,6 @@ int main() {
                          pixels.get(),
                          width * static_cast<int>(sizeof(uint32_t)));
     background.setPixmap(pixels);
-
-    // Cap to 60 FPS
-    auto end = SDL_GetPerformanceCounter();
-    float elapsedMS = static_cast<float>(end - start) /
-                      static_cast<float>(SDL_GetPerformanceFrequency()) *
-                      1000.0f;
-    SDL_Delay(std::max(static_cast<uint32_t>(16.666f - elapsedMS), 0u));
   }
 SDL_EXIT:
   return 0;
