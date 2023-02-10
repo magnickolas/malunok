@@ -2,11 +2,13 @@
 #include "move.h"
 #include <chrono>
 #include <functional>
+#include <memory>
 #include <optional>
 
 template <typename Derived, typename T, typename F>
-LoopBase<Derived, T, F>::LoopBase(const T& start_value, F&& shift)
-    : Base(start_value, std::move(shift)) {
+LoopBase<Derived, T, F>::LoopBase(const T& start_value, F&& shift,
+                                  std::shared_ptr<AbstractTimer> timer)
+    : Base(start_value, std::move(shift), std::move(timer)) {
   if constexpr (LEq<T>) {
     reached_begin_ = [](const T& a, const T& b) { return a <= b; };
   }
@@ -27,21 +29,22 @@ Derived&& LoopBase<Derived, T, F>::reached_begin(
 
 template <typename Derived, typename T, typename F>
 T LoopBase<Derived, T, F>::get() {
-  auto diff = Base::shift_time();
-  auto sign = direction_ ? 1 : -1;
-  Base::cur_value_ = Base::shift_(Base::cur_value_, sign * diff.count());
-  if (direction_ &&
-      Base::reached_end_.value()(Base::cur_value_, Base::end_value_.value())) {
-    Base::cur_value_ = Base::end_value_.value();
-    direction_ = false;
-  } else if (!direction_ &&
-             reached_begin_.value()(Base::cur_value_, Base::start_value_)) {
-    Base::cur_value_ = Base::start_value_;
-    direction_ = true;
+  T cur_value = direction_
+                    ? Base::shift_(Base::start_value_, Base::timer_->elapsed())
+                    : Base::shift_(*Base::end_value_, -Base::timer_->elapsed());
+  if (direction_ && (*Base::reached_end_)(cur_value, *Base::end_value_)) {
+    direction_ = !direction_;
+    Base::timer_->reset();
+    cur_value = *Base::end_value_;
+  } else if (!direction_ && (*reached_begin_)(cur_value, Base::start_value_)) {
+    direction_ = !direction_;
+    Base::timer_->reset();
+    cur_value = Base::start_value_;
   }
-  return Base::cur_value_;
+  return cur_value;
 }
 
 template <typename T, typename F>
-Loop<T, F>::Loop(const T& start_value, F&& shift)
-    : Base(start_value, std::move(shift)) {}
+Loop<T, F>::Loop(const T& start_value, F&& shift,
+                 std::shared_ptr<AbstractTimer> timer)
+    : Base(start_value, std::move(shift), std::move(timer)) {}

@@ -67,13 +67,16 @@ void SDL_DrawDisk(SDL_Renderer* renderer, int32_t cx, int32_t cy,
 }
 
 Color Color::operator+(const Color& other) const {
-  return {r + other.r, g + other.g, b + other.b, a + other.a};
+  return {static_cast<uint8_t>(r + other.r), static_cast<uint8_t>(g + other.g),
+          static_cast<uint8_t>(b + other.b), static_cast<uint8_t>(a + other.a)};
 }
 
 Color Color::operator-(const Color& other) const {
-  return {r - other.r, g - other.g, b - other.b, a - other.a};
+  return {static_cast<uint8_t>(r - other.r), static_cast<uint8_t>(g - other.g),
+          static_cast<uint8_t>(b - other.b), static_cast<uint8_t>(a - other.a)};
 }
 
 Color Color::operator*(float k) const {
-  return {int(r * k), int(g * k), int(b * k), int(a * k)};
+  return {static_cast<uint8_t>(r * k), static_cast<uint8_t>(g * k),
+          static_cast<uint8_t>(b * k), static_cast<uint8_t>(a * k)};
 }

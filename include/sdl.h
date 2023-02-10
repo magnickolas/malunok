@@ -40,7 +40,7 @@ public:
   SDLWinContext& operator=(const SDLWinContext&) = delete;
   ~SDLWinContext() = default;
 
-  SDL_Window& get_window() { return *window_.get(); }
+  SDL_Window& get_window();
   SDL_Renderer& get_renderer();
 
 private:

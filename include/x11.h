@@ -14,15 +14,15 @@ public:
   struct WinProps {
     Window root;
     int screen;
-    int width;
-    int height;
-    int depth;
+    unsigned int width;
+    unsigned int height;
+    unsigned int depth;
     Pixmap pixmap;
     GC gc;
     XImage* image;
   } winProps;
   Display* dis;
 
-  WinProps getWinProps(int screen);
+  void initWinProps(int screen);
   void setRootAtoms();
 };

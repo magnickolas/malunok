@@ -6,7 +6,7 @@ find_package(X11 REQUIRED)
 function(buildDemo DEMO_NAME)
   SET(DEMO_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/${DEMO_NAME})
   message(STATUS "Generating project file for demo in ${DEMO_FOLDER}")
-  file(GLOB SOURCE ../src/*.cc ${DEMO_FOLDER}/*.cc)
+  file(GLOB_RECURSE SOURCE ../src/*.cc ${DEMO_FOLDER}/*.cc)
   add_executable(${DEMO_NAME} ${SOURCE})
   target_include_directories(${DEMO_NAME} PRIVATE
     ../include ${SDL2_INCLUDE_DIRS} ${X11_INCLUDE_DIR})
@@ -17,7 +17,7 @@ function(buildDemo DEMO_NAME)
     cxx_std_20)
   target_compile_options(
     ${DEMO_NAME} PRIVATE
-    -Wall -Wextra -pedantic-errors)
+    -Wall -Wextra -pedantic-errors -Wold-style-cast -Wuninitialized -Wconversion -Wshadow -Wfloat-equal "$<$<CONFIG:RELEASE>:-march=native;-mtune=native>")
 endfunction(buildDemo)
 
 function(buildDemos)

@@ -1,24 +1,23 @@
 #include "x11.h"
 #include <X11/Xatom.h>
+#include <X11/Xlib.h>
 #include <cstdint>
 #include <memory>
 
 X11Background::X11Background() {
-  dis = XOpenDisplay(NULL);
-  winProps = getWinProps(DefaultScreen(dis));
+  dis = XOpenDisplay(nullptr);
+  initWinProps(DefaultScreen(dis));
 }
 
-X11Background::WinProps X11Background::getWinProps(int screen) {
-  WinProps winProps;
+void X11Background::initWinProps(int screen) {
   winProps.root = RootWindow(dis, screen);
   winProps.screen = screen;
-  winProps.width = DisplayWidth(dis, screen);
-  winProps.height = DisplayHeight(dis, screen);
-  winProps.depth = DefaultDepth(dis, screen);
+  winProps.width = static_cast<unsigned int>(DisplayWidth(dis, screen));
+  winProps.height = static_cast<unsigned int>(DisplayHeight(dis, screen));
+  winProps.depth = static_cast<unsigned int>(DefaultDepth(dis, screen));
   winProps.pixmap = XCreatePixmap(dis, winProps.root, winProps.width,
                                   winProps.height, winProps.depth);
   winProps.gc = DefaultGC(dis, screen);
-  return winProps;
 }
 
 void X11Background::setRootAtoms() {
@@ -41,8 +40,9 @@ void X11Background::setRootAtoms() {
                          &data_eroot);
 
       if (data_root && data_eroot && type == XA_PIXMAP &&
-          *((Pixmap*)data_root) == *((Pixmap*)data_eroot))
-        XKillClient(dis, *((Pixmap*)data_root));
+          *reinterpret_cast<Pixmap*>(data_root) ==
+              *reinterpret_cast<Pixmap*>(data_eroot))
+        XKillClient(dis, *reinterpret_cast<Pixmap*>(data_root));
     }
   }
 
@@ -50,16 +50,17 @@ void X11Background::setRootAtoms() {
   atom_eroot = XInternAtom(dis, "ESETROOT_PMAP_ID", false);
 
   XChangeProperty(dis, winProps.root, atom_root, XA_PIXMAP, 32, PropModeReplace,
-                  (unsigned char*)&winProps.pixmap, 1);
+                  reinterpret_cast<const unsigned char*>(&winProps.pixmap), 1);
   XChangeProperty(dis, winProps.root, atom_eroot, XA_PIXMAP, 32,
-                  PropModeReplace, (unsigned char*)&winProps.pixmap, 1);
+                  PropModeReplace,
+                  reinterpret_cast<const unsigned char*>(&winProps.pixmap), 1);
 }
 
 void X11Background::setPixmap(std::unique_ptr<uint8_t[]>& pixels) {
   setRootAtoms();
-  auto image =
-      XCreateImage(dis, CopyFromParent, winProps.depth, ZPixmap, 0,
-                   (char*)pixels.get(), winProps.width, winProps.height, 32, 0);
+  auto image = XCreateImage(dis, CopyFromParent, winProps.depth, ZPixmap, 0,
+                            reinterpret_cast<char*>(pixels.get()),
+                            winProps.width, winProps.height, 32, 0);
   XKillClient(dis, AllTemporary);
   XSetCloseDownMode(dis, RetainTemporary);
   XSetWindowBackgroundPixmap(dis, winProps.root, winProps.pixmap);
@@ -71,7 +72,4 @@ void X11Background::setPixmap(std::unique_ptr<uint8_t[]>& pixels) {
   XFree(image);
 }
 
-X11Background::~X11Background() {
-  XFreePixmap(dis, winProps.pixmap);
-  XCloseDisplay(dis);
-}
+X11Background::~X11Background() { XCloseDisplay(dis); }

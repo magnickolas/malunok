@@ -25,8 +25,8 @@ template <typename T> T* sdl_must(T* ptr = nullptr) {
 SDLWinContext::SDLWinContext(SDLWinContext&&) = default;
 
 SDLWinContext::SDLWinContext(SDLWinContext::opts o)
-    : window_(nullptr, SDL_DestroyWindow),
-      renderer_(nullptr, SDL_DestroyRenderer) {
+    : window_(nullptr, &SDL_DestroyWindow),
+      renderer_(nullptr, &SDL_DestroyRenderer) {
   sdl_must(SDL_Init(SDL_INIT_VIDEO));
   window_.reset(
       sdl_must(SDL_CreateWindow(o.window.title, o.window.x, o.window.y,
@@ -36,17 +36,18 @@ SDLWinContext::SDLWinContext(SDLWinContext::opts o)
 }
 
 SDLWinContext::SDLWinContext(const X11Background& x11, const renderer_opts& ro)
-    : window_(nullptr, SDL_DestroyWindow),
-      renderer_(nullptr, SDL_DestroyRenderer) {
+    : window_(nullptr, &SDL_DestroyWindow),
+      renderer_(nullptr, &SDL_DestroyRenderer) {
   sdl_must(SDL_Init(SDL_INIT_VIDEO));
-  window_.reset(sdl_must(SDL_CreateWindowFrom((const void*)x11.winProps.root)));
+  window_.reset(sdl_must(
+      SDL_CreateWindowFrom(reinterpret_cast<const void*>(x11.winProps.root))));
   renderer_.reset(
       sdl_must(SDL_CreateRenderer(window_.get(), ro.index, ro.flags)));
 }
 
-SDL_Renderer& SDLWinContext::get_renderer() {
-  return *sdl_must(renderer_.get());
-}
+SDL_Window& SDLWinContext::get_window() { return *window_.get(); }
+
+SDL_Renderer& SDLWinContext::get_renderer() { return *renderer_.get(); }
 
 SDLContext::SDLContext(uint32_t flags) { sdl_must(SDL_Init(flags)); }
 
