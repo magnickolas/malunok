@@ -67,20 +67,3 @@ private:
   std::vector<SDLWinContext> windows;
   SDL_Event event_;
 };
-
-class CoordMapper {
-public:
-  CoordMapper(int width, int height,
-              std::function<std::pair<int, int>(int width, int height)>&&
-                  get_grid_units);
-  CoordMapper(int width, int height, int grid_unit_x, int grid_unit_y);
-
-  std::pair<int, int> to_screen(float x, float y) const;
-  std::pair<float, float> to_screen_f(float x, float y) const;
-  std::pair<float, float> from_screen(int dx, int dy) const;
-
-private:
-  int width_;
-  int height_;
-  std::function<std::pair<int, int>(int, int)> get_grid_units_;
-};

@@ -20,16 +20,6 @@ template <typename T> T* sdl_must(T* ptr = nullptr) {
   }
   return ptr;
 }
-
-template <typename T> T clip(T value, T min, T max) {
-  if (value < min) {
-    return min;
-  }
-  if (value > max) {
-    return max;
-  }
-  return value;
-}
 } // namespace
 
 SDLWinContext::SDLWinContext(SDLWinContext&&) = default;
@@ -67,39 +57,4 @@ std::optional<SDL_Event> SDLContext::poll() {
     return std::nullopt;
   }
   return event_;
-}
-
-CoordMapper::CoordMapper(
-    int width, int height,
-    std::function<std::pair<int, int>(int width, int height)>&& get_grid_units)
-    : width_(width), height_(height),
-      get_grid_units_(std::move(get_grid_units)) {}
-
-CoordMapper::CoordMapper(int width, int height, int grid_unit_x,
-                         int grid_unit_y)
-    : width_(width), height_(height),
-      get_grid_units_([grid_unit_x, grid_unit_y](int, int) {
-        return std::make_pair(grid_unit_x, grid_unit_y);
-      }) {}
-
-std::pair<int, int> CoordMapper::to_screen(float x, float y) const {
-  auto [grid_unit_x, grid_unit_y] = get_grid_units_(width_, height_);
-  int dx = static_cast<int>(x * grid_unit_x) + width_ / 2;
-  int dy = static_cast<int>(y * grid_unit_y) + height_ / 2;
-  return {clip(dx, 0, width_ - 1), clip(dy, 0, height_ - 1)};
-}
-
-std::pair<float, float> CoordMapper::to_screen_f(float x, float y) const {
-  auto [grid_unit_x, grid_unit_y] = get_grid_units_(width_, height_);
-  float dx = x * grid_unit_x + width_ / 2.f;
-  float dy = y * grid_unit_y + height_ / 2.f;
-  return {clip(dx, 0.0f, static_cast<float>(width_ - 1)),
-          clip(dy, 0.0f, static_cast<float>(height_ - 1))};
-}
-
-std::pair<float, float> CoordMapper::from_screen(int x, int y) const {
-  auto [grid_unit_x, grid_unit_y] = get_grid_units_(width_, height_);
-  float dx = (x - width_ / 2.f) / grid_unit_x;
-  float dy = (y - height_ / 2.f) / grid_unit_y;
-  return {dx, dy};
 }

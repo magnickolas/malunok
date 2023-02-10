@@ -3,7 +3,7 @@
 #include <SDL_render.h>
 #include <cstdint>
 
-constexpr double PI = 3.14159265358979323846;
+constexpr float PI = 3.14159265358979323846;
 
 void SDL_DrawCircle(SDL_Renderer* renderer, int32_t cx, int32_t cy,
                     int32_t radius);
@@ -19,7 +19,7 @@ struct Color {
 
   Color operator+(const Color& other) const;
   Color operator-(const Color& other) const;
-  Color operator*(double k) const;
+  Color operator*(float k) const;
 };
 
 constexpr Color BLACK{0x00, 0x00, 0x00, 0xFF};

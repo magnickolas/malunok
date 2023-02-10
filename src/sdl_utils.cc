@@ -74,6 +74,6 @@ Color Color::operator-(const Color& other) const {
   return {r - other.r, g - other.g, b - other.b, a - other.a};
 }
 
-Color Color::operator*(double k) const {
+Color Color::operator*(float k) const {
   return {int(r * k), int(g * k), int(b * k), int(a * k)};
 }
