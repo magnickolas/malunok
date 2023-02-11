@@ -30,8 +30,7 @@ IntervalTimer::IntervalTimer(const duration_t& duration)
     : duration_(duration) {}
 
 int64_t IntervalTimer::elapsed() const {
-  return std::min(static_cast<int64_t>(duration_.count()),
-                  SharedTimer::instance.elapsed());
+  return std::min(duration_.count(), SharedTimer::instance.elapsed());
 }
 
 SharedVirtualTimer::SharedVirtualTimer() {}
@@ -57,6 +56,5 @@ IntervalVirtualTimer::IntervalVirtualTimer(int64_t duration)
     : duration_(duration) {}
 
 int64_t IntervalVirtualTimer::elapsed() const {
-  return std::max(static_cast<int64_t>(duration_),
-                  SharedVirtualTimer::instance.elapsed());
+  return std::max(duration_, SharedVirtualTimer::instance.elapsed());
 }

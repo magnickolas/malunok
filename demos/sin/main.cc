@@ -88,16 +88,27 @@ int main() {
       color_slider);
 
   while (true) {
+    puts("-1");
     SharedTimer::tick();
+    puts("0");
     FPSCapGuard g{60};
+    puts("1");
 
     while (auto e = sdl_ctx.poll()) {
+      printf("%d\n", e->type);
       if (e->type == SDL_QUIT ||
           (e->type == SDL_KEYDOWN && e->key.keysym.sym == SDLK_ESCAPE)) {
         goto SDL_EXIT;
       }
+      //handle resize
+      if (e->type == SDL_WINDOWEVENT &&
+          e->window.event == SDL_WINDOWEVENT_RESIZED) {
+        width = e->window.data1;
+        height = e->window.data2;
+      }
     }
-    SDL_GetWindowSize(&window, &width, &height);
+    puts("2");
+    /* SDL_GetWindowSize(&window, &width, &height); */
     const CoordMapper map_coords{width, height,
                                  static_cast<float>(width) / 10.f,
                                  static_cast<float>(height) / 5.f};
@@ -109,26 +120,32 @@ int main() {
     const auto& cur_line_color = line_color.get();
     SDL_SetRenderDrawColor(&renderer, cur_line_color.r, cur_line_color.g,
                            cur_line_color.b, cur_line_color.a);
+    puts("3");
     auto x_from = map_coords.from_screen(0, 0).first;
     auto x_to = map_coords.from_screen(width, 0).first;
     // dynamic variables
     auto cur_amp = amplitude_var.get();
     auto cur_freq = freq_var.get();
     auto cur_phase = phase_var.get();
+    puts("4");
 
     std::vector<SDL_Point> points;
     float dmin = 1e-3f;
     float dmax = 1 / (10 * cur_freq);
     float step;
+    puts("5");
     for (float x = x_from; x < x_to; x += step) {
       float y = std::sin(2 * PI * cur_freq * x + cur_phase) * cur_amp;
       step = dmax - (dmax - dmin) / cur_amp * abs(y);
       auto [dx, dy] = map_coords.to_screen(x, y);
       points.push_back({dx, dy});
     }
+    puts("6");
     SDL_RenderDrawLines(&renderer, points.data(),
                         static_cast<int>(points.size()));
     SDL_RenderPresent(&renderer);
+    puts("7");
+    puts("DONE");
   }
 SDL_EXIT:
   return 0;
