@@ -60,7 +60,7 @@ std::optional<SDL_Event> SDLContext::poll() {
   return event_;
 }
 
-FPSCapGuard::FPSCapGuard(uint32_t fps) : fps_(fps) {
+FPSCapGuard::FPSCapGuard(float fps) : fps_(fps) {
   start_ = SDL_GetPerformanceCounter();
 }
 
@@ -68,5 +68,5 @@ FPSCapGuard::~FPSCapGuard() {
   auto end = SDL_GetPerformanceCounter();
   float elapsedMS = static_cast<float>(end - start_) /
                     static_cast<float>(SDL_GetPerformanceFrequency()) * 1000.0f;
-  SDL_Delay(std::max(static_cast<uint32_t>(16.666f - elapsedMS), 0u));
+  SDL_Delay(static_cast<uint32_t>(std::max(1000.f / fps_ - elapsedMS, 0.f)));
 }

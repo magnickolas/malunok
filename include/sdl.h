@@ -70,10 +70,10 @@ private:
 
 class FPSCapGuard {
 public:
-  FPSCapGuard(uint32_t fps);
+  FPSCapGuard(float fps);
   ~FPSCapGuard();
 
 private:
-  uint32_t fps_;
+  float fps_;
   uint64_t start_;
 };
